@@ -9,8 +9,6 @@ th, td {
   border: 1px solid black;
   padding: 8px;
   min-width: 200px;
-  
-  
 }
 
 td {
@@ -36,6 +34,6 @@ th {
 }
 
 .selected-cell {
-  background: #cce5ff !important;
-  outline: 2px solid #339af0;
+  background: #548cc8 !important;
+  
 }
