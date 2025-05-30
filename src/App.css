@@ -1,0 +1,41 @@
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: sans-serif;
+}
+
+th, td {
+  border: 1px solid black;
+  padding: 8px;
+  min-width: 200px;
+  
+  
+}
+
+td {
+   text-align: right;
+}
+
+th:not(:last-child),
+td:not(:last-child) {
+  border-right: 2px solid #888;
+ 
+}
+
+td:first-child {
+  text-align: left;
+}
+
+th {
+  background: #eee;
+  text-align: left;
+  border-bottom: 1px solid lightgray;
+  padding: 2px 4px;
+  position: relative;
+}
+
+.selected-cell {
+  background: #cce5ff !important;
+  outline: 2px solid #339af0;
+}
