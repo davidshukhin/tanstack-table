@@ -1,4 +1,3 @@
-import { useState, useReducer } from "react";
 
 import type {Category} from "../types/data.types.ts";
 import "./App.css";
