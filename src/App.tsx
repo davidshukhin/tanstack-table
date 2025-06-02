@@ -1,9 +1,7 @@
-
-import type {Category} from "../types/data.types.ts";
+import type { Category } from "../types/data.types.ts";
 import "./App.css";
 import Table from "./components/Table.tsx";
-
-
+import AnimalTable from "./components/Test.tsx";
 
 const testData: Category[] = [
   {
@@ -1493,11 +1491,10 @@ const testData: Category[] = [
 ];
 
 function App() {
-
-
   return (
     <div className="p-4">
-        <Table data={testData} />
+      <AnimalTable />
+      <Table data={testData} />
     </div>
   );
 }

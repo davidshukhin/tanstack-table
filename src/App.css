@@ -1,14 +1,16 @@
 
 table {
-  width: 100%;
+  /* width: 100%; */
   border-collapse: collapse;
   font-family: sans-serif;
+  table-layout: auto;
 }
 
 th, td {
   border: 1px solid black;
   padding: 8px;
   min-width: 200px;
+  white-space: normal; word-break: break-word;
 }
 
 td {

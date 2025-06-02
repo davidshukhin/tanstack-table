@@ -1,4 +1,4 @@
-import { useState, useReducer } from "react";
+import { useState, useReducer, useMemo } from "react";
 import {
   createColumnHelper,
   flexRender,
@@ -36,80 +36,119 @@ const Table = ({ data }: TableProps) => {
     right?: string[];
   };
 
-  const columns = [
-    columnHelper.accessor("name", {
-      header: ({ column }) => (
-        <div>
-          Name <button onClick={() => togglePin(column.id)}>📌</button>
-        </div>
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("name", {
+        header: ({ column }) => (
+          <div
+            className={column.getCanSort() ? "cursor-pointer select-none" : ""}
+            onClick={column.getToggleSortingHandler()}
+            title={
+              column.getCanSort()
+                ? column.getNextSortingOrder() === "asc"
+                  ? "Sort ascending"
+                  : column.getNextSortingOrder() === "desc"
+                  ? "Sort descending"
+                  : "Clear sort"
+                : undefined
+            }
+          >
+            Name
+            {{
+              asc: " 🔼",
+              desc: " 🔽",
+            }[column.getIsSorted() as string] ?? null}
+            <button onClick={() => togglePin(column.id)}>📌</button>
+          </div>
+        ),
+        cell: ({ row, getValue }) => (
+          <>
+            {row.getCanExpand() ? (
+              <button
+                onClick={row.getToggleExpandedHandler()}
+                style={{ marginRight: "0.5rem" }}
+              >
+                {row.getIsExpanded() ? "▼" : "▶"}
+              </button>
+            ) : null}
+            {getValue()}
+          </>
+        ),
+      }),
+      ...[
+        "totalProducts",
+        "targetValue",
+        "inprocessValue",
+        "confirmValue",
+        "validatedValue",
+        "totalValue",
+        "totalVsTargetValue",
+        "totalVsTargetValuePerc",
+        "mixTargetValue",
+        "mixActualValue",
+        "targetQuantity",
+        "inprocessQuantity",
+        "confirmQuantity",
+        "validatedQuantity",
+        "totalQuantity",
+        "totalVsTargetQuantity",
+        "totalVsTargetQuantityPerc",
+        "mixTargetQuantity",
+        "mixActualQuantity",
+        "nbAcsBuy",
+        "acs",
+      ].map((key) =>
+        columnHelper.accessor(
+          (row: Category) =>
+            key === "totalProducts"
+              ? row.totalProducts
+              : row.kpis[key as keyof KPIs],
+          {
+            id: key,
+            header: ({ column }) => (
+              <div
+                className={
+                  column.getCanSort() ? "cursor-pointer select-none" : ""
+                }
+                onClick={column.getToggleSortingHandler()}
+                title={
+                  column.getCanSort()
+                    ? column.getNextSortingOrder() === "asc"
+                      ? "Sort ascending"
+                      : column.getNextSortingOrder() === "desc"
+                      ? "Sort descending"
+                      : "Clear sort"
+                    : undefined
+                }
+              >
+                {key.charAt(0).toUpperCase() + key.slice(1)}{" "}
+                {{
+                  asc: " 🔼",
+                  desc: " 🔽",
+                }[column.getIsSorted() as string] ?? null}
+                <button onClick={() => togglePin(column.id)}>📌</button>
+              </div>
+            ),
+            cell: (info) => info.renderValue(),
+          }
+        )
       ),
-      cell: ({ row, getValue }) => (
-        <>
-          {row.getCanExpand() ? (
-            <button
-              onClick={row.getToggleExpandedHandler()}
-              style={{ marginRight: "0.5rem" }}
-            >
-              {row.getIsExpanded() ? "▼" : "▶"}
-            </button>
-          ) : null}
-          {getValue()}
-        </>
-      ),
-    }),
-    ...[
-      "totalProducts",
-      "targetValue",
-      "inprocessValue",
-      "confirmValue",
-      "validatedValue",
-      "totalValue",
-      "totalVsTargetValue",
-      "totalVsTargetValuePerc",
-      "mixTargetValue",
-      "mixActualValue",
-      "targetQuantity",
-      "inprocessQuantity",
-      "confirmQuantity",
-      "validatedQuantity",
-      "totalQuantity",
-      "totalVsTargetQuantity",
-      "totalVsTargetQuantityPerc",
-      "mixTargetQuantity",
-      "mixActualQuantity",
-      "nbAcsBuy",
-      "acs",
-    ].map((key) =>
-      columnHelper.accessor(
-        (row: Category) =>
-          key === "totalProducts"
-            ? row.totalProducts
-            : row.kpis[key as keyof KPIs],
-        {
-          id: key,
-          header: ({ column }) => (
-            <div>
-              {key.charAt(0).toUpperCase() + key.slice(1)}{" "}
-              <button onClick={() => togglePin(column.id)}>📌</button>
-            </div>
-          ),
-          cell: (info) => info.renderValue(),
-        },
-      ),
-    ),
-  ];
+    ],
+    []
+  );
 
   const table = useReactTable<Category>({
     data,
     columns,
-    // defaultColumn: {
-    //   size: 200,
-    //   minSize: 50,
-    //   maxSize: 600,
-    // },
+    defaultColumn: {
+      size: 200,
+      minSize: 50,
+      maxSize: 600,
+    },
 
     state: {
       columnPinning,
+      sorting: sorting,
     },
     // columnResizeMode,
     //ColumnResizeDirection,
@@ -150,7 +189,7 @@ const Table = ({ data }: TableProps) => {
                 <th
                   key={header.id}
                   style={{
-                    width: `${header.getSize()}px`,
+                    width: header.getSize(),
                     //minWidth: `${header.column.columnDef.minSize ?? 50}px`,
                     //maxWidth: `${header.column.columnDef.maxSize ?? 400}px`,
                     position: header.column.getIsPinned()
@@ -168,38 +207,20 @@ const Table = ({ data }: TableProps) => {
                 >
                   {!header.isPlaceholder && (
                     <>
-                      <div
-                        className={
-                          header.column.getCanSort()
-                            ? "cursor-pointer select-none"
-                            : ""
-                        }
-                        onClick={header.column.getToggleSortingHandler()}
-                        title={
-                          header.column.getCanSort()
-                            ? header.column.getNextSortingOrder() === "asc"
-                              ? "Sort ascending"
-                              : header.column.getNextSortingOrder() === "desc"
-                                ? "Sort descending"
-                                : "Clear sort"
-                            : undefined
-                        }
-                      >
+                      <div>
                         {flexRender(
                           header.column.columnDef.header,
-                          header.getContext(),
+                          header.getContext()
                         )}
-                        {{
-                          asc: " 🔼",
-                          desc: " 🔽",
-                        }[header.column.getIsSorted() as string] ?? null}
                       </div>
 
                       {header.column.getCanResize?.() && (
                         <div
                           onMouseDown={header.getResizeHandler()}
                           onTouchStart={header.getResizeHandler()}
-                          className={`resizer ${table.options.columnResizeDirection} ${header.column.getIsResizing() ? "isResizing" : ""} `}
+                          className={`resizer ${
+                            header.column.getIsResizing() ? "isResizing" : ""
+                          } `}
                           onDoubleClick={() => header.column.resetSize()}
                           style={{
                             transform:
@@ -219,6 +240,9 @@ const Table = ({ data }: TableProps) => {
                             userSelect: "none",
                             touchAction: "none",
                             zIndex: 10,
+                            background: header.column.getIsResizing() 
+                            ? "blue"
+                            : "transparent",
                           }}
                         />
                       )}
@@ -246,7 +270,7 @@ const Table = ({ data }: TableProps) => {
                       : ""
                   }
                   style={{
-                    width: `${cell.column.getSize()}px`,
+                    width: cell.column.getSize(),
                     //minWidth: `${cell.column.columnDef.minSize ?? 50}px`,
                     //maxWidth: `${cell.column.columnDef.maxSize ?? 400}px`,
                     position: cell.column.getIsPinned() ? "sticky" : "relative",
@@ -286,7 +310,7 @@ const Table = ({ data }: TableProps) => {
             columnSizingInfo: table.getState().columnSizingInfo,
           },
           null,
-          2,
+          2
         )}
       </pre>
     </div>
