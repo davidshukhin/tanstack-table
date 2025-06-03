@@ -82,12 +82,19 @@ const Table = ({ data }: TableProps) => {
                 : undefined
             }
           >
-            Name
             {{
               asc: " 🔼",
               desc: " 🔽",
             }[column.getIsSorted() as string] ?? null}
-            <button onClick={() => togglePin(column.id)}>📌</button>
+            <div className="button-container">
+              Name
+              <button
+                className="pin-button"
+                onClick={() => togglePin(column.id)}
+              >
+                📌
+              </button>
+            </div>
           </div>
         ),
         cell: ({ row, getValue }) => (
@@ -155,7 +162,12 @@ const Table = ({ data }: TableProps) => {
                   asc: " 🔼",
                   desc: " 🔽",
                 }[column.getIsSorted() as string] ?? null}
-                <button onClick={() => togglePin(column.id)}>📌</button>
+                <button
+                  className="pin-button"
+                  onClick={() => togglePin(column.id)}
+                >
+                  📌
+                </button>
               </div>
             ),
             cell: (info) => info.renderValue(),
@@ -241,12 +253,13 @@ const Table = ({ data }: TableProps) => {
       >
         {!header.isPlaceholder && (
           <>
+            <button className="dragable-button" {...attributes} {...listeners}>
+              🟰
+            </button>
             <div>
               {flexRender(header.column.columnDef.header, header.getContext())}
             </div>
-            <button {...attributes} {...listeners}>
-              🟰
-            </button>
+
             {header.column.getCanResize?.() && (
               <div
                 onMouseDown={header.getResizeHandler()}

@@ -47,3 +47,36 @@ th {
   background: rgb(74, 144, 226) !important;
   
 }
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.pin-button {
+  background: transparent;
+  border: none;
+  cursor: grab;
+  padding: 2px 4px;
+  /* Remove height if you want the icon to be normal size */
+  /* height: 10px; */
+  font-size: 1.1em;
+  position: absolute;
+  top: 2px;
+  right: 24px;
+  z-index: 2;
+}
+
+.dragable-button {
+  background: transparent;
+  border: none;
+  cursor: grab;
+  padding: 2px 4px;
+  /* Remove height if you want the icon to be normal size */
+  /* height: 10px; */
+  font-size: 1.1em;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 2;
+}
