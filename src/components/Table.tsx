@@ -29,7 +29,11 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties } from "react";
 
-import type { ColumnResizeMode, SortingState } from "@tanstack/react-table";
+import type {
+  ColumnResizeMode,
+  SortingState,
+  ExpandedState,
+} from "@tanstack/react-table";
 import type { KPIs, Category } from "../../types/data.types.ts";
 
 interface TableProps {
@@ -47,6 +51,7 @@ const Table = ({ data }: TableProps) => {
     rowId: string;
     columnId: string;
   } | null>(null);
+  const [expanded, setExpanded] = useState<ExpandedState>({});
   //const [columnResizeMode, setColumnResizeMode] =
   //useState<ColumnResizeMode>("onChange");
   //
@@ -69,8 +74,8 @@ const Table = ({ data }: TableProps) => {
                 ? column.getNextSortingOrder() === "asc"
                   ? "Sort ascending"
                   : column.getNextSortingOrder() === "desc"
-                  ? "Sort descending"
-                  : "Clear sort"
+                    ? "Sort descending"
+                    : "Clear sort"
                 : undefined
             }
           >
@@ -137,8 +142,8 @@ const Table = ({ data }: TableProps) => {
                     ? column.getNextSortingOrder() === "asc"
                       ? "Sort ascending"
                       : column.getNextSortingOrder() === "desc"
-                      ? "Sort descending"
-                      : "Clear sort"
+                        ? "Sort descending"
+                        : "Clear sort"
                     : undefined
                 }
               >
@@ -151,15 +156,15 @@ const Table = ({ data }: TableProps) => {
               </div>
             ),
             cell: (info) => info.renderValue(),
-          }
-        )
+          },
+        ),
       ),
     ],
-    []
+    [],
   );
 
   const [columnOrder, setColumnOrder] = useState<string[]>(() =>
-    columns.map((c) => c.id!)
+    columns.map((c) => c.id!),
   );
 
   const table = useReactTable<Category>({
@@ -175,6 +180,12 @@ const Table = ({ data }: TableProps) => {
       columnPinning,
       sorting: sorting,
       columnOrder,
+      expanded,
+    },
+    initialState: {
+      pagination: {
+        pageSize: 100,
+      },
     },
     onColumnOrderChange: setColumnOrder,
     // columnResizeMode,
@@ -183,6 +194,7 @@ const Table = ({ data }: TableProps) => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
+    onExpandedChange: setExpanded,
     getExpandedRowModel: getExpandedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -190,6 +202,7 @@ const Table = ({ data }: TableProps) => {
     enablePinning: true,
     enableSorting: true,
     enableColumnResizing: true,
+    debugTable: true,
     columnResizeMode: "onChange",
     getSubRows: (row) => row.children ?? [],
   });
@@ -218,7 +231,9 @@ const Table = ({ data }: TableProps) => {
               ? `${header.column.getStart("left")}px`
               : undefined,
           zIndex: header.column.getIsPinned() || isDragging ? 1 : 0,
-          background: header.column.getIsPinned() ? "#f0f0f0" : undefined,
+          background: header.column.getIsPinned()
+            ? "rgb(206,206,206)"
+            : undefined,
         }}
       >
         {!header.isPlaceholder && (
@@ -266,7 +281,13 @@ const Table = ({ data }: TableProps) => {
     );
   };
 
-  const DragAlongCell = ({ cell, row }: { cell: Cell<Category, unknown>, row: Row<Category> }) => {
+  const DragAlongCell = ({
+    cell,
+    row,
+  }: {
+    cell: Cell<Category, unknown>;
+    row: Row<Category>;
+  }) => {
     const { isDragging, setNodeRef, transform } = useSortable({
       id: cell.column.id,
     });
@@ -325,7 +346,7 @@ const Table = ({ data }: TableProps) => {
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
     useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
+    useSensor(KeyboardSensor, {}),
   );
 
   function togglePin(columnId: string) {
@@ -369,11 +390,10 @@ const Table = ({ data }: TableProps) => {
                 {row.getVisibleCells().map((cell) => (
                   <SortableContext
                     key={cell.id}
-                    row={row}
                     items={columnOrder}
                     strategy={horizontalListSortingStrategy}
                   >
-                    <DragAlongCell key={cell.id} cell={cell} />
+                    <DragAlongCell key={cell.id} cell={cell} row={row} />
                   </SortableContext>
                 ))}
               </tr>
@@ -400,7 +420,7 @@ const Table = ({ data }: TableProps) => {
               columnSizingInfo: table.getState().columnSizingInfo,
             },
             null,
-            2
+            2,
           )}
         </pre>
       </div>
