@@ -27,6 +27,9 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+
+import { read, writeFileXLSX } from "xlsx";
+import * as XLSX from "xlsx";
 import type { CSSProperties } from "react";
 
 import type {
@@ -35,7 +38,7 @@ import type {
   ExpandedState,
 } from "@tanstack/react-table";
 import type { KPIs, Category } from "../../types/data.types.ts";
-
+//import exportToExcel from "../utils/exportToExcel.ts";
 interface TableProps {
   data: Category[];
 }
@@ -361,6 +364,26 @@ const Table = ({ data }: TableProps) => {
     });
   }
 
+  function flattenRows(rows) {
+    return rows.flatMap((row) => {
+      const { kpis, ...rest } = row.original;
+      const flat = { ...rest, ...kpis };
+      delete flat.children;
+      return [flat, ...(row.subRows ? flattenRows(row.subRows) : [])];
+    });
+  }
+  function handleExportToExcel() {
+    const rows = table.getRowModel().rows;
+    const dataForExport = flattenRows(rows);
+    console.log(rows);
+    const worksheet = XLSX.utils.json_to_sheet(dataForExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    XLSX.writeFile(workbook, "export.xlsx");
+    console.log(dataForExport);
+    //    exportToExcel(data, );
+  }
+
   return (
     <DndContext
       collisionDetection={closestCenter}
@@ -369,6 +392,25 @@ const Table = ({ data }: TableProps) => {
       sensors={sensors}
     >
       <div className="p-4">
+        <div>
+          <button onClick={handleExportToExcel} title="Export to Excel">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9.75v6.75m0 0-3-3m3 3 3-3m-8.25 6a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z"
+              />
+            </svg>
+            <span> Export</span>
+          </button>
+        </div>
         <table>
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
